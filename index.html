@@ -12,6 +12,7 @@
 	
 </head>
 <script src ="pixi/pixi.min.js"></script>
+<script src ="pixi/pixi.textinput.min.js"></script>
 <body>
 	<script type="text/javascript">	
 		let type = "WebGL"
@@ -20,8 +21,21 @@
 		}
 
 		PIXI.utils.sayHello(type)
+		
+		// Aliases
+		Sprite = PIXI.Sprite;
+		Application = PIXI.Application;
+		
+		let loader = new PIXI.Loader();
+			
+		// Global variables
+		let catChef;
+		let searchInput;
+		let searchButton;
+		let state = play;
+
 		// Create a Pixi Application
-		let app = new PIXI.Application({
+		let app = new Application({
 			width: 256,
 			height: 256,
 			antialias: true,
@@ -40,21 +54,74 @@
 		// Add auto-generated Pixi canvas to HTML body
 		document.body.appendChild(app.view);
 
-		// load in textures
-		let loader = new PIXI.Loader();
+		
 		loader
-			.add("images/cat.png")
+			.add([
+				"images/cat.png",
+				"images/search.png"	
+			])
 			.load(setup);
+		loader
+			.onProgress.add(loadProgressHandler);
+		function loadProgressHandler() {
+			console.log("loading");
+		}
 
 		function setup() {
 			// Create sprite from cat texture
-			let cat = new PIXI.Sprite(
+			catChef = new Sprite(
 			loader.resources["images/cat.png"].texture
 		);
 
+			catChef.position.set((window.innerWidth/2 - 64), 64);
+			catChef.vy = 1;
+			// catChef.scale.set(2.0, 2.0);
 			// Add cat sprite to the stage
-			app.stage.addChild(cat);
+			app.stage.addChild(catChef);
 
+			searchInput = new PIXI.TextInput({
+				input: {
+					fontSize: '24px',
+					padding: '16px',
+					width: '600px',
+					color: '#26272E'
+				},
+				box: {
+					default: {fill: 0xE8E9F3, rounded: 12, stroke: {color: 0xCBCEE0, width: 3}},
+					focused: {fill: 0xE1E3EE, rounded: 12, stroke: {color: 0xABAFC6, width: 3}},
+					disabled: {fill: 0xDBDBDB, rounded: 12}
+						}});
+
+			searchInput.placeholder = 'Anxiously search for...';
+			searchInput.x = window.innerWidth/2 - (searchInput.width/2);
+			searchInput.y = 200;
+			
+
+			app.stage.addChild(searchInput);
+
+			searchButton = new Sprite(
+			loader.resources["images/search.png"].texture
+			);
+
+			searchButton.x = searchInput.x + searchInput.width + 32;
+			searchButton.y = searchInput.y
+
+			app.stage.addChild(searchButton);
+
+			
+
+			app.ticker.add(delta => gameLoop(delta));
+		}
+
+		function gameLoop(delta){
+			// Update the current game state
+			state(delta);
+		}
+
+		function play(delta){
+			catChef.vy += 0.1;
+			catChef.y += catChef.vy;
+			// console.log(searchInput.text);
 		}
 		
 
