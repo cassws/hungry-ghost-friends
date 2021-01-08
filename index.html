@@ -24,7 +24,8 @@
 		
 		// Aliases
 		Sprite = PIXI.Sprite;
-		Application = PIXI.Application;
+		Application = PIXI.Application,
+		Container = PIXI.Container;
 		
 		let loader = new PIXI.Loader();
 			
@@ -44,7 +45,7 @@
 			}
 		);
 
-		app.renderer.backgroundColor = 0x061639;
+		app.renderer.backgroundColor = 0xebe5f5;
 
 		app.renderer.view.style.position = "absolute";
 		app.renderer.view.style.position = "block";
@@ -58,7 +59,8 @@
 		loader
 			.add([
 				"images/cat.png",
-				"images/search.png"	
+				"images/search.png",
+				"images/google_logo_1997_boo.png"
 			])
 			.load(setup);
 		loader
@@ -68,10 +70,15 @@
 		}
 
 		function setup() {
+
+
+			let keyEnter = keyboard("Enter");
+	
 			// Create sprite from cat texture
 			catChef = new Sprite(
 			loader.resources["images/cat.png"].texture
 		);
+
 
 			catChef.position.set((window.innerWidth/2 - 64), 64);
 			catChef.vy = 1;
@@ -79,11 +86,18 @@
 			// Add cat sprite to the stage
 			app.stage.addChild(catChef);
 
+			searchLogo = new Sprite(
+			loader.resources["images/google_logo_1997_boo.png"].texture);
+			searchLogo.position.set((window.innerWidth/2) - (searchLogo.width/2), 30);
+			// app.stage.addChild(searchLogo);
+
+
+		
 			searchInput = new PIXI.TextInput({
 				input: {
-					fontSize: '24px',
-					padding: '16px',
-					width: '600px',
+					fontSize: '22px',
+					padding: '12px',
+					width: '640px',
 					color: '#26272E'
 				},
 				box: {
@@ -94,23 +108,90 @@
 
 			searchInput.placeholder = 'Anxiously search for...';
 			searchInput.x = window.innerWidth/2 - (searchInput.width/2);
-			searchInput.y = 200;
-			
+			searchInput.y = 180;
+			searchInput.maxLength = 60;
 
-			app.stage.addChild(searchInput);
+			// app.stage.addChild(searchInput);
+
 
 			searchButton = new Sprite(
 			loader.resources["images/search.png"].texture
 			);
 
-			searchButton.x = searchInput.x + searchInput.width + 32;
+			searchButton.x = searchInput.x + searchInput.width + 24;
 			searchButton.y = searchInput.y
-
-			app.stage.addChild(searchButton);
-
+			searchButton.interactive = true;
+			searchButton.on('mousedown', submitSearch);
 			
+			// app.stage.addChild(searchButton);
+
+			// Create container for all search elements
+			
+			searchScene = new Container();
+			searchScene.addChild(searchLogo);
+			searchScene.addChild(searchInput);
+			searchScene.addChild(searchButton);
+			app.stage.addChild(searchScene);
+
+			keyEnter.press = () => {};
+			keyEnter.release = () => {
+				submitSearch();
+			}
 
 			app.ticker.add(delta => gameLoop(delta));
+		}
+
+		function submitSearch() {
+			searchInput.text = 'boOoOoO';
+		}
+
+		function keyboard(value) {
+			let key = {};
+			key.value = value;
+			key.isDown = false;
+			key.isUp = true;
+			key.press = undefined;
+			key.release = undefined;
+  
+			//The `downHandler`
+			key.downHandler = event => {
+    				if (event.key === key.value) {
+      					if (key.isUp && key.press) key.press();
+      					key.isDown = true;
+      					key.isUp = false;
+      					event.preventDefault();
+    				}
+  			};
+
+			//The `upHandler`
+			key.upHandler = event => {
+				if (event.key === key.value) {
+					if (key.isDown && key.release) key.release();
+					key.isDown = false;
+					key.isUp = true;
+					event.preventDefault();
+				}
+			};
+
+			//Attach event listeners
+			const downListener = key.downHandler.bind(key);
+			const upListener = key.upHandler.bind(key);
+  
+			window.addEventListener(
+				"keydown", downListener, false
+			);
+
+			window.addEventListener(
+				"keyup", upListener, false
+			);
+  
+			// Detach event listeners
+			key.unsubscribe = () => {
+				window.removeEventListener("keydown", downListener);
+				window.removeEventListener("keyup", upListener);
+			};
+
+			return key;
 		}
 
 		function gameLoop(delta){
