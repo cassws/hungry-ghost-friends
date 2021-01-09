@@ -25,15 +25,17 @@
 		// Aliases
 		Sprite = PIXI.Sprite;
 		Application = PIXI.Application,
-		Container = PIXI.Container;
+		Container = PIXI.Container,
+		AnimatedSprite = PIXI.AnimatedSprite;
 		
 		let loader = new PIXI.Loader();
 			
 		// Global variables
-		let catChef;
+		let ghostChef;
 		let searchInput;
 		let searchButton;
 		let state = play;
+		let ghostSheet;
 
 		// Create a Pixi Application
 		let app = new Application({
@@ -62,7 +64,9 @@
 				"images/search.png",
 				"images/google_logo_1997_boo.png"
 			])
+			.add("images/animated-sprites/happy_ghost.json")
 			.load(setup);
+
 		loader
 			.onProgress.add(loadProgressHandler);
 		function loadProgressHandler() {
@@ -75,21 +79,27 @@
 			let keyEnter = keyboard("Enter");
 	
 			// Create sprite from cat texture
-			catChef = new Sprite(
-			loader.resources["images/cat.png"].texture
-		);
+			// ghostChef = new Sprite(
+			// loader.resources["images/cat.png"].texture
+		// );	
+			let ghostSheet = loader.resources["images/animated-sprites/happy_ghost.json"].spritesheet;
+			ghostChef = new AnimatedSprite(ghostSheet.animations["tile"]);
+			ghostChef.animationSpeed = 0.167;
+			ghostChef.width = 64;
+			ghostChef.height = 64;
 
 
-			catChef.position.set((window.innerWidth/2 - 64), 64);
-			catChef.vy = 1;
-			// catChef.scale.set(2.0, 2.0);
+
+			ghostChef.position.set((window.innerWidth/2 - 64), 64);
+			ghostChef.vy = 1;
+			// ghostChef.scale.set(2.0, 2.0);
 			// Add cat sprite to the stage
-			app.stage.addChild(catChef);
+			app.stage.addChild(ghostChef);
 
 			searchLogo = new Sprite(
 			loader.resources["images/google_logo_1997_boo.png"].texture);
 			searchLogo.position.set((window.innerWidth/2) - (searchLogo.width/2), 30);
-			// app.stage.addChild(searchLogo);
+			// app.stage.addChild(searchLogo)
 
 
 		
@@ -111,7 +121,7 @@
 			searchInput.y = 180;
 			searchInput.maxLength = 60;
 
-			// app.stage.addChild(searchInput);
+			// app.stage.addChild(searchInput)
 
 
 			searchButton = new Sprite(
@@ -123,10 +133,13 @@
 			searchButton.interactive = true;
 			searchButton.on('mousedown', submitSearch);
 			
-			// app.stage.addChild(searchButton);
+			// app.stage.addChild(searchButton)
 
 			// Create container for all search elements
-			
+
+			ghostChef.x = searchButton.x + 4;
+			ghostChef.y = searchButton.y + 4;
+
 			searchScene = new Container();
 			searchScene.addChild(searchLogo);
 			searchScene.addChild(searchInput);
@@ -143,6 +156,7 @@
 
 		function submitSearch() {
 			searchInput.text = 'boOoOoO';
+					
 		}
 
 		function keyboard(value) {
@@ -200,8 +214,8 @@
 		}
 
 		function play(delta){
-			catChef.vy += 0.1;
-			catChef.y += catChef.vy;
+			ghostChef.vy += 0.125;
+			ghostChef.y += ghostChef.vy;
 			// console.log(searchInput.text);
 		}
 		
