@@ -34,8 +34,9 @@
 		let ghostChef;
 		let searchInput;
 		let searchButton;
-		let state = play;
+		let state = awaitSearch;
 		let ghostSheet;
+        let searchString;
 
 		// Create a Pixi Application
 		let app = new Application({
@@ -55,7 +56,8 @@
 		app.renderer.resize(window.innerWidth, window.innerHeight);
 		
 		// Add auto-generated Pixi canvas to HTML body
-		document.body.appendChild(app.view);
+
+        document.body.appendChild(app.view);
 
 		
 		loader
@@ -153,10 +155,15 @@
 
 			app.ticker.add(delta => gameLoop(delta));
 		}
+        function changeStateTo(newState){
+            state = newState;
+        }
 
 		function submitSearch() {
+            searchString = searchInput.text;
 			searchInput.text = 'boOoOoO';
-					
+            console.log(searchString);
+            changeStateTo(chefChopUp);
 		}
 
 		function keyboard(value) {
@@ -212,6 +219,18 @@
 			// Update the current game state
 			state(delta);
 		}
+
+        function awaitSearch(delta){
+
+        }
+        function chefChopUp(delta){
+        if (ghostChef.y > searchButton.y - 100){
+                ghostChef.vy += 0.02;
+		        ghostChef.y -= ghostChef.vy;
+            } else {
+                ghostChef.x -= ghostChef.vy;
+            }}
+
 
 		function play(delta){
 			ghostChef.vy += 0.125;
