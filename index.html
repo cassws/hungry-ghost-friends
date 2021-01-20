@@ -93,7 +93,7 @@
 		// );	
 			let ghostSheet = loader.resources["images/animated-sprites/happy_ghost.json"].spritesheet;
 			ghostChef = new AnimatedSprite(ghostSheet.animations["tile"]);
-			ghostChef.animationSpeed = 0.05;
+			ghostChef.animationSpeed = 0.1;
 			ghostChef.width = 64;
 			ghostChef.height = 64;
 
@@ -116,7 +116,7 @@
 
             bigKnife = new Sprite(
                         loader.resources["images/static-sprites/big_knife.png"].texture);
-            bigKnife.position.set(searchLogo.x + 145, searchLogo.y + 48);
+            bigKnife.position.set(searchLogo.x + 148, searchLogo.y + 48);
 		
 			searchInput = new PIXI.TextInput({
 				input: {
