@@ -2,7 +2,7 @@
 <html>
 <head>
 	<meta charset="utf-8">
-	<title>Hello World</title>
+	<title>i believe in yoOoOoOu</title>
 	<style>
 		* {
 			padding: 0;
@@ -37,6 +37,9 @@
 		let state = awaitSearch;
 		let ghostSheet;
         let searchString;
+        let searchLogo;
+        let chefKitchen;
+        
 
 		// Create a Pixi Application
 		let app = new Application({
@@ -67,7 +70,11 @@
 				"images/google_logo_1997_boo.png"
 			])
 			.add("images/animated-sprites/happy_ghost.json")
-			.load(setup);
+			.add([
+                        "images/static-sprites/kitchen_arrangement.png",
+                        "images/static-sprites/big_knife.png"
+                    ])
+            .load(setup);
 
 		loader
 			.onProgress.add(loadProgressHandler);
@@ -86,7 +93,7 @@
 		// );	
 			let ghostSheet = loader.resources["images/animated-sprites/happy_ghost.json"].spritesheet;
 			ghostChef = new AnimatedSprite(ghostSheet.animations["tile"]);
-			ghostChef.animationSpeed = 0.167;
+			ghostChef.animationSpeed = 0.05;
 			ghostChef.width = 64;
 			ghostChef.height = 64;
 
@@ -96,19 +103,25 @@
 			ghostChef.vy = 1;
 			// ghostChef.scale.set(2.0, 2.0);
 			// Add cat sprite to the stage
-			app.stage.addChild(ghostChef);
 
 			searchLogo = new Sprite(
 			loader.resources["images/google_logo_1997_boo.png"].texture);
 			searchLogo.position.set((window.innerWidth/2) - (searchLogo.width/2), 30);
-			// app.stage.addChild(searchLogo)
 
+            // hidden little kitchen!
+            
+            chefKitchen = new Sprite(
+                        loader.resources["images/static-sprites/kitchen_arrangement.png"].texture);
+            chefKitchen.position.set(searchLogo.x, searchLogo.y);
 
+            bigKnife = new Sprite(
+                        loader.resources["images/static-sprites/big_knife.png"].texture);
+            bigKnife.position.set(searchLogo.x + 145, searchLogo.y + 48);
 		
 			searchInput = new PIXI.TextInput({
 				input: {
 					fontSize: '22px',
-					padding: '12px',
+					padding: '16px',
 					width: '640px',
 					color: '#26272E'
 				},
@@ -118,7 +131,7 @@
 					disabled: {fill: 0xDBDBDB, rounded: 12}
 						}});
 
-			searchInput.placeholder = 'Anxiously search for...';
+			searchInput.placeholder = "anxious thought stuck in my brain, hmm....";
 			searchInput.x = window.innerWidth/2 - (searchInput.width/2);
 			searchInput.y = 180;
 			searchInput.maxLength = 60;
@@ -130,7 +143,7 @@
 			loader.resources["images/search.png"].texture
 			);
 
-			searchButton.x = searchInput.x + searchInput.width + 24;
+			searchButton.x = searchInput.x + searchInput.width + 20;
 			searchButton.y = searchInput.y
 			searchButton.interactive = true;
 			searchButton.on('mousedown', submitSearch);
@@ -139,16 +152,21 @@
 
 			// Create container for all search elements
 
-			ghostChef.x = searchButton.x + 4;
-			ghostChef.y = searchButton.y + 4;
+			ghostChef.x = searchButton.x + 1;
+			ghostChef.y = searchButton.y + 1;
 
 			searchScene = new Container();
+            searchScene.addChild(chefKitchen);
+            searchScene.addChild(bigKnife);
 			searchScene.addChild(searchLogo);
 			searchScene.addChild(searchInput);
+			searchScene.addChild(ghostChef);
 			searchScene.addChild(searchButton);
 			app.stage.addChild(searchScene);
 
-			keyEnter.press = () => {};
+		
+
+            keyEnter.press = () => {};
 			keyEnter.release = () => {
 				submitSearch();
 			}
@@ -158,11 +176,12 @@
         function changeStateTo(newState){
             state = newState;
         }
-
+        // this func handles the transition from text submit to starting chef animations
 		function submitSearch() {
             searchString = searchInput.text;
-			searchInput.text = 'boOoOoO';
+			// searchInput.text = 'boOoOoO';
             console.log(searchString);
+            // ghostChef.play();
             changeStateTo(chefChopUp);
 		}
 
@@ -225,18 +244,67 @@
         }
         function chefChopUp(delta){
         if (ghostChef.y > searchButton.y - 100){
-                ghostChef.vy += 0.02;
+                ghostChef.vy += 0.05;
 		        ghostChef.y -= ghostChef.vy;
             } else {
                 ghostChef.x -= ghostChef.vy;
-            }}
+            }
 
+        if (checkRectCollision(ghostChef, searchLogo)){
+                    console.log('collide!!');
+                    dimSpriteAlpha(searchLogo, 0.02);
+                }
+        }
 
+        function dimSpriteAlpha(sprite, newAlpha){
+                if (sprite.alpha > newAlpha + 0.1 ){
+                    sprite.alpha -= 0.1;
+                        } else{
+                    sprite.alpha = newAlpha;
+                }
+                }
 		function play(delta){
 			ghostChef.vy += 0.125;
 			ghostChef.y += ghostChef.vy;
 			// console.log(searchInput.text);
 		}
+
+        // general collision/overlap detection func!
+
+        function checkRectCollision(obj1, obj2){
+                let hit, combinedHalfWidths, combineHalfHeights, vx, vy;
+
+                hit = false;
+                // find center points of each sprite
+                obj1.centerX = obj1.x + obj1.width / 2;
+                obj1.centerY = obj1.y + obj1.height / 2;
+                obj2.centerX = obj2.x + obj2.width / 2;
+                obj2.centerY = obj2.y + obj2.height / 2;
+
+                // find half-widths and half-heights for each
+                obj1.halfWidth = obj1.width / 2;
+                obj1.halfHeight = obj1.height / 2;
+                obj2.halfWidth = obj2.width / 2;
+                obj2.halfHeight = obj2.height / 2;
+
+                // calculate distnace vector between sprites
+                vx = obj1.centerX - obj2.centerX;
+                vy = obj1.centerY - obj2.centerY;
+                
+                combinedHalfWidths = obj1.halfWidth + obj2.halfWidth;
+                combinedHalfHeights = obj1.halfHeight + obj2.halfHeight;
+
+                if (Math.abs(vx) < combinedHalfWidths && Math.abs(vy) < combinedHalfHeights){
+                        hit = true;
+                    }
+
+                return hit
+
+
+
+                }
+        // hover animation - cute lil peak out from outside the search icon
+        // knife sharpening
 		
 
 
